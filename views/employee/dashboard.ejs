@@ -1,0 +1,19 @@
+<%- include('../partials/page-top') %>
+<div class="page-heading dashboard-heading">
+  <div><p class="eyebrow"><%= t('Field workspace') %></p><h1><%= t('Your assigned work') %></h1><p class="page-subtitle"><%= t('Pick up the latest updates and keep residents informed.') %></p></div>
+  <a class="btn btn-primary" href="/employee/complaints"><%- lucide('assignment') %><%= t('View assignments') %></a>
+</div>
+
+<section class="metric-grid employee-metrics" aria-label="<%= t('Task statistics') %>">
+  <%- include('../partials/metric-card',{label:'TOTAL ASSIGNMENTS',value:(counts.Assigned||0)+(counts.Reopened||0)+(counts['In Progress']||0)+(counts['Awaiting User Confirmation']||0)+(counts.Resolved||0),icon:'clipboard_list',tone:'navy',foot:'Assigned to you'}) %>
+  <%- include('../partials/metric-card',{label:'READY TO BEGIN',value:counts['Under Review']||0,icon:'clock_3',tone:'orange',foot:'Awaiting your update'}) %>
+  <%- include('../partials/metric-card',{label:'IN PROGRESS',value:counts['In Progress']||0,icon:'wrench',tone:'blue',foot:'Currently active'}) %>
+  <%- include('../partials/metric-card',{label:'AWAITING RESIDENT',value:counts['Awaiting User Confirmation']||0,icon:'mark_email_read',tone:'orange',foot:'Proof sent for confirmation'}) %>
+  <%- include('../partials/metric-card',{label:'COMPLETED',value:counts.Resolved||0,icon:'circle_check',tone:'green',foot:'Resolved by you'}) %>
+</section>
+
+<section class="content-card">
+  <div class="section-heading"><div><h2><%= t('Recent assignments') %></h2><p><%= t('Your work, sorted by most recent activity') %></p></div><a class="text-link" href="/employee/complaints"><%= t('See all') %><%- lucide('arrow_forward') %></a></div>
+  <% if (recent.length) { %><div class="table-responsive"><table class="table app-table"><thead><tr><th><%= t('REPORT') %></th><th><%= t('LOCATION') %></th><th><%= t('STATUS') %></th><th><%= t('UPDATED') %></th><th></th></tr></thead><tbody><% recent.forEach(c => { %><tr><td><a class="table-title" href="/employee/complaints/<%= c._id %>"><%= c.title %></a><small><%= t(c.category) %> · <%= t(c.priority) %> <%= t('priority') %></small></td><td><%= c.location.address %></td><td><%- include('../partials/status',{status:c.status}) %></td><td><%= c.updatedAt.toLocaleDateString(language) %></td><td><a class="report-view-button" href="/employee/complaints/<%= c._id %>"><%- lucide('visibility') %><span><%= t('View') %></span></a></td></tr><% }); %></tbody></table></div><% } else { %><%- include('../partials/empty',{icon:'assignment_turned_in',title:'No active assignments',description:'New work assigned to you will appear here.'}) %><% } %>
+</section>
+<%- include('../partials/page-bottom') %>

@@ -1,0 +1,7 @@
+<nav class="navbar navbar-expand-lg app-nav"><div class="container-xl"><a class="brand-mark" href="<%= typeof currentUser !== 'undefined' && currentUser ? '/dashboard' : '/' %>"><%- lucide('location_city') %><span>urban<span class="brand-accent">report</span></span></a><div class="ms-auto d-flex gap-3 align-items-center"><%- include('language-switch') %><% if (typeof currentUser !== 'undefined' && currentUser) { %><a class="nav-link" href="/dashboard">Dashboard</a><a class="nav-link d-none d-sm-inline" href="/profile"><%= t("Profile") %></a><span class="avatar-pill"><%= currentUser.fullName.split(' ').map(n => n[0]).slice(0,2).join('').toUpperCase() %></span><form method="post" action="/logout"><input type="hidden" name="_csrf" value="<%= csrfToken %>"><button class="btn btn-outline-dark btn-sm"><%= t("Sign out") %></button></form><% } else { %><a class="nav-link" href="/login"><%= t("Sign in") %></a><a class="btn btn-primary btn-sm" href="/register"><%= t("Create account") %></a><% } %></div></div></nav>
+
+
+
+
+
+

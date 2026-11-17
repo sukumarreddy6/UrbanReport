@@ -1,0 +1,42 @@
+<%- include('../partials/page-top') %>
+<div class="page-heading dashboard-heading">
+  <div><p class="eyebrow"><%= t('Operations center') %></p><h1><%= t('Overview') %></h1><p class="page-subtitle"><%= t('Complaint activity and response performance across departments.') %></p></div>
+  <a class="btn btn-primary" href="/admin/complaints"><%- lucide('fact_check') %><%= t('Review complaints') %></a>
+</div>
+
+<section class="metric-grid admin-metrics" aria-label="<%= t('Complaint statistics') %>">
+  <%- include('../partials/metric-card',{label:'TOTAL COMPLAINTS',value:total,icon:'inbox',tone:'navy',foot:'Across all departments'}) %>
+  <%- include('../partials/metric-card',{label:'UNDER REVIEW',value:counts['Under Review']||0,icon:'clock_3',tone:'orange',foot:'Needs attention'}) %>
+  <%- include('../partials/metric-card',{label:'IN PROGRESS',value:counts['In Progress']||0,icon:'wrench',tone:'blue',foot:'Work underway'}) %>
+  <%- include('../partials/metric-card',{label:'RESOLVED',value:counts.Resolved||0,icon:'circle_check',tone:'green',foot:resolution.averageDays==null?'No resolution time yet':`${resolution.averageDays.toFixed(1)} ${t('days')} average`}) %>
+</section>
+
+<section class="dashboard-grid dashboard-analytics">
+  <section class="content-card analytics-card">
+    <div class="section-heading"><div><h2><%= t('Complaint activity') %></h2><p><%= t('Daily reports received and marked resolved over the past 14 days') %></p></div><span class="range-label"><%= t('Last 14 days') %></span></div>
+    <div class="chart-wrap"><canvas id="complaint-trend" role="img" aria-label="<%= t('Daily complaints submitted and marked resolved') %>"></canvas></div>
+    <div id="trend-data" hidden data-labels="<%= JSON.stringify(dayLabels) %>" data-submitted="<%= JSON.stringify(submittedTrend) %>" data-resolved="<%= JSON.stringify(resolvedTrend) %>" data-received-label="<%= t('Received') %>" data-resolved-label="<%= t('Resolved') %>"></div>
+  </section>
+  <section class="content-card analytics-card">
+    <div class="section-heading"><div><h2><%= t('Complaints by category') %></h2><p><%= t('Distribution from all submitted reports') %></p></div></div>
+    <% if (categories.length) { %><div class="chart-wrap chart-wrap-small"><canvas id="category-chart" role="img" aria-label="<%= t('Complaints by category') %>"></canvas></div><% } else { %><%- include('../partials/empty',{icon:'bar_chart',title:'No complaints submitted',description:'Category totals will appear here when residents submit reports.'}) %><% } %>
+    <div id="category-data" hidden data-labels="<%= JSON.stringify(categories.map(x => t(x._id))) %>" data-values="<%= JSON.stringify(categories.map(x => x.count)) %>"></div>
+  </section>
+</section>
+
+<section class="dashboard-grid dashboard-lower">
+  <section class="content-card">
+    <div class="section-heading"><div><h2><%= t('Recent complaints') %></h2><p><%= t('Latest reports submitted by residents') %></p></div><a class="text-link" href="/admin/complaints"><%= t('Open complaint queue') %><%- lucide('arrow_forward') %></a></div>
+    <% if (recent.length) { %><div class="table-responsive"><table class="table app-table"><thead><tr><th><%= t('COMPLAINT') %></th><th><%= t('RESIDENT') %></th><th><%= t('STATUS') %></th><th><%= t('SUBMITTED') %></th><th></th></tr></thead><tbody><% recent.forEach(c => { %><tr><td><a class="table-title" href="/admin/complaints/<%= c._id %>"><%= c.title %></a><small><%= t(c.category) %> · <%= c.location.address %></small></td><td><%= c.citizenId?.fullName || t('Resident') %></td><td><%- include('../partials/status',{status:c.status}) %></td><td><%= c.createdAt.toLocaleDateString(language) %></td><td><a class="report-view-button" href="/admin/complaints/<%= c._id %>"><%- lucide('visibility') %><span><%= t('View') %></span></a></td></tr><% }); %></tbody></table></div><% } else { %><%- include('../partials/empty',{icon:'inbox',title:'No complaints submitted',description:'New resident reports will appear here for review.'}) %><% } %>
+  </section>
+  <section class="content-card">
+    <div class="section-heading"><div><h2><%= t('Department workload') %></h2><p><%= t('Assigned complaints by department') %></p></div><a class="text-link" href="/admin/departments"><%= t('Manage teams') %><%- lucide('arrow_forward') %></a></div>
+    <% if (departments.length) { departments.forEach(d => { %><div class="workload-row"><div class="workload-label"><span><%= d.department.name %></span><strong><%= d.count %></strong></div><div class="progress-track"><span style="width:<%= Math.min(100,Math.round(d.count/Math.max(total,1)*100)) %>%"></span></div></div><% }); } else { %><%- include('../partials/empty',{icon:'account_tree',title:'No assignments yet',description:'Assigned work will appear here as reports are routed to teams.'}) %><% } %>
+  </section>
+</section>
+<section class="content-card">
+  <div class="section-heading"><div><h2><%= t('Department performance') %></h2><p><%= t('Assigned workload and resolutions by department.') %></p></div><a class="text-link" href="/admin/departments"><%= t('Manage departments') %><%- lucide('arrow_forward') %></a></div>
+  <% if (departmentPerformance.length) { %><div class="table-responsive"><table class="table app-table"><thead><tr><th><%= t('DEPARTMENT') %></th><th><%= t('TOTAL REPORTS') %></th><th><%= t('IN PROGRESS') %></th><th><%= t('RESOLVED') %></th><th><%= t('REJECTED') %></th></tr></thead><tbody><% departmentPerformance.forEach(item => { %><tr><td><strong><%= item.name %></strong></td><td><%= item.total %></td><td><%= item.inProgress %></td><td><span class="status-pill status-resolved"><%= item.resolved %> <%= t('resolved') %></span></td><td><%= item.rejected %></td></tr><% }); %></tbody></table></div><% } else { %><%- include('../partials/empty',{icon:'account_tree',title:'No department performance yet',description:'Department report totals will appear after reports are routed to teams.'}) %><% } %>
+</section>
+<script src="/vendor/chart.js/chart.umd.min.js" defer></script><script src="/js/admin-dashboard.js" defer></script>
+<%- include('../partials/page-bottom') %>

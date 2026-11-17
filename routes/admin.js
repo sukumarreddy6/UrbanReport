@@ -1,0 +1,24 @@
+const router = require('express').Router();
+const controller = require('../controllers/adminController');
+const { requireRole } = require('../middleware/auth');
+const { verifyCsrfToken } = require('../middleware/csrf');
+const validate = require('../middleware/validate');
+const schemas = require('../validators/schemas');
+
+router.use(requireRole('admin'));
+router.get('/dashboard', controller.dashboard);
+router.get('/complaints', controller.listComplaints);
+router.get('/complaints/:id', controller.showComplaint);
+router.post('/complaints/:id/review', verifyCsrfToken, validate(schemas.adminReview), controller.review);
+router.post('/complaints/:id/assignment', verifyCsrfToken, validate(schemas.assignment), controller.assign);
+router.put('/complaints/:id/assignment', verifyCsrfToken, validate(schemas.assignment), controller.assign);
+router.post('/complaints/:id/assignment/remove', verifyCsrfToken, controller.removeDepartmentAssignment);
+router.post('/complaints/:id/status', verifyCsrfToken, validate(schemas.adminComplaintStatus), controller.updateUnassignedComplaintStatus);
+router.get('/complaints/:id/assignment', (req, res) => res.redirect(`/admin/complaints/${req.params.id}`));
+router.patch('/complaints/:id/priority', verifyCsrfToken, validate(schemas.priority), controller.setPriority);
+router.get('/departments', controller.departments);
+router.post('/departments', verifyCsrfToken, validate(schemas.department), controller.createDepartment);
+router.post('/departments/accounts', verifyCsrfToken, validate(schemas.departmentAccount), controller.createDepartmentAccount);
+router.patch('/departments/accounts/:id/toggle', verifyCsrfToken, controller.toggleDepartmentAccount);
+router.patch('/departments/:id/toggle', verifyCsrfToken, controller.toggleDepartment);
+module.exports = router;

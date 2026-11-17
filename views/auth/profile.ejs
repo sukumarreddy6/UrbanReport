@@ -1,0 +1,17 @@
+<%- include('../partials/page-top',{title,activePage:'profile'}) %>
+<div class="page-heading"><div><p class="eyebrow"><%= t("ACCOUNT SETTINGS") %></p><h1><%= t("My profile") %></h1><p class="page-subtitle"><%= t("Keep your contact details up to date.") %></p></div></div>
+<section class="content-card profile-card">
+  <form method="post" action="/profile" class="vstack gap-3">
+    <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+    <label class="form-label"><%= t("Full name") %><input class="form-control mt-1" name="fullName" required minlength="2" maxlength="100" value="<%= currentUser.fullName %>"></label>
+    <label class="form-label">Email<input class="form-control mt-1" value="<%= currentUser.email %>" disabled><span class="form-text"><%= t("Contact support if you need to change your sign-in email.") %></span></label>
+    <label class="form-label">Phone number<input class="form-control mt-1" name="phoneNumber" maxlength="30" value="<%= currentUser.phoneNumber || '' %>"></label>
+    <label class="form-label">Address<textarea class="form-control mt-1" name="address" rows="3" maxlength="300"><%= currentUser.address || '' %></textarea></label>
+    <button class="btn btn-primary align-self-start"><%= t("Save profile") %></button>
+  </form>
+  <div class="profile-signout-row">
+    <div><h2><%= t('Sign out') %></h2><p><%= t('Sign out of your UrbanReport account on this device.') %></p></div>
+    <form method="post" action="/logout"><input type="hidden" name="_csrf" value="<%= csrfToken %>"><button class="btn btn-outline-danger"><%- lucide('logout') %><%= t('Sign out') %></button></form>
+  </div>
+</section>
+<%- include('../partials/page-bottom') %>

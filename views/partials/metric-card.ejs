@@ -1,0 +1,5 @@
+<article class="metric-card metric-<%= tone || 'blue' %>">
+  <div class="metric-top"><span class="metric-label"><%= t(label) %></span><span class="metric-icon"><%- lucide(icon || 'bar_chart') %></span></div>
+  <div class="metric-value"><%= value %></div>
+  <% if (typeof foot !== 'undefined' && foot) { %><div class="metric-foot"><%= t(foot) %></div><% } %>
+</article>

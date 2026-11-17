@@ -1,0 +1,16 @@
+<% const languageOptions = [['en','English'],['ta','தமிழ்'],['te','తెలుగు'],['kn','ಕನ್ನಡ'],['hi','हिन्दी'],['ml','മലയാളം']]; %>
+<form class="language-switch" method="post" action="/language" data-language-switch data-active-language="<%= typeof language !== 'undefined' ? language : 'en' %>">
+  <input type="hidden" name="_csrf" value="<%= typeof csrfToken !== 'undefined' ? csrfToken : '' %>">
+  <input type="hidden" name="returnTo" value="<%= typeof currentPath === 'string' && currentPath.startsWith('/') && !currentPath.startsWith('//') ? currentPath : '/' %>">
+  <label class="visually-hidden" for="language-choice-<%= typeof language !== 'undefined' ? language : 'en' %>">Language / மொழி</label>
+  <select class="language-native-select visually-hidden" id="language-choice-<%= typeof language !== 'undefined' ? language : 'en' %>" name="language" tabindex="-1" aria-hidden="true">
+    <% languageOptions.forEach(([code, label]) => { %><option value="<%= code %>" style="font-size:18px;color:#0F172A" <%= language === code ? 'selected' : '' %>><%= label %></option><% }); %>
+  </select>
+  <details class="language-menu">
+    <summary class="language-menu-summary" aria-label="<%= t('Choose language') %>"><%- lucide('globe') %><span data-language-current><%= languageOptions.find(([code]) => code === language)?.[1] || 'English' %></span><span class="language-menu-chevron" aria-hidden="true"></span></summary>
+    <div class="language-menu-dropdown" role="group" aria-label="<%= t('Choose language') %>">
+      <% languageOptions.forEach(([code, label]) => { %><button type="button" class="language-option" data-language-value="<%= code %>"><span><%= label %></span><%- lucide('check') %></button><% }); %>
+    </div>
+  </details>
+</form>
+<script src="/js/language-switch.js" defer></script>

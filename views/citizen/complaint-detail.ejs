@@ -1,0 +1,45 @@
+<%- include('../partials/page-top') %>
+<div class="page-heading">
+  <div>
+    <a class="back-link" href="/citizen/complaints"><%- lucide('arrow_back') %> <%= t('All reports') %></a>
+    <p class="eyebrow mt-3">REPORT · <%= String(complaint._id).slice(-8).toUpperCase() %></p>
+    <h1><%= complaint.title %></h1>
+    <p class="page-subtitle"><%= t(complaint.category) %> · <%= complaint.location.address %></p>
+  </div>
+  <%- include('../partials/status', { status: complaint.status }) %>
+</div>
+
+<% if (['Submitted','Under Review'].includes(complaint.status)) { %><div class="report-row-actions mb-3"><a class="btn btn-outline-secondary" href="/citizen/complaints/<%= complaint._id %>/edit"><%- lucide('edit_location_alt') %><%= t('Edit report') %></a><form method="post" action="/citizen/complaints/<%= complaint._id %>?_method=DELETE" onsubmit="return confirm('<%= t('Delete this report? This cannot be undone.') %>')"><input type="hidden" name="_csrf" value="<%= csrfToken %>"><button class="btn btn-outline-danger"><%- lucide('delete') %><%= t('Delete report') %></button></form></div><% } %>
+
+<div class="detail-grid">
+  <div class="detail-main">
+    <section class="content-card">
+      <div class="section-heading"><div><h2><%= t('Report details') %></h2><p><%= t('Submitted') %> <%= complaint.createdAt.toLocaleString() %></p></div></div>
+      <p class="detail-description"><%= complaint.description %></p>
+      <% if (complaint.images.length) { %><div class="image-grid"><% complaint.images.forEach((image, index) => { %><a href="<%= image.displayUrl %>" data-image-lightbox aria-label="<%= t('View full size image') %> <%= index + 1 %>"><img src="<%= image.displayUrl %>" alt="Photo for complaint <%= index + 1 %>"></a><% }); %></div><% } %>
+      <% if (complaint.resolutionImages?.length) { %><div class="mt-4"><h3 class="h6"><%= t('Employee proof of work') %></h3><div class="image-grid"><% complaint.resolutionImages.forEach((image, index) => { %><a href="<%= image.displayUrl %>" data-image-lightbox aria-label="<%= t('View proof of work image') %> <%= index + 1 %>"><img src="<%= image.displayUrl %>" alt="<%= t('Employee proof of completed work') %> <%= index + 1 %>"></a><% }); %></div></div><% } %>
+      <div class="info-strip"><%- lucide('location_on') %><div><small>LOCATION</small><strong><%= complaint.location.address %></strong></div></div>
+    </section>
+    <section class="content-card">
+      <div class="section-heading"><div><h2><%= t('Progress timeline') %></h2><p><%= t('Updates from the civic response team') %></p></div></div>
+      <% if (events.length) { %><div class="timeline"><% events.forEach(event => { %><div class="timeline-item"><span class="timeline-icon"><%- lucide(event.type === 'status' ? 'sync_alt' : event.type === 'created' ? 'add_location_alt' : event.type === 'updated' ? 'edit_location_alt' : event.type === 'assignment' ? 'assignment_ind' : 'chat') %></span><div><div class="timeline-title"><%= t(event.newStatus || event.type.replace(/-/g, ' ')) %></div><p><%= event.remarks %></p><small><%= event.actorId?.fullName || 'UrbanReport' %> · <%= event.createdAt.toLocaleString() %></small></div></div><% }); %></div><% } else { %><p class="text-muted"><%= t('No updates yet.') %></p><% } %>
+    </section>
+    <% if (!['Submitted','Under Review','Reopened'].includes(complaint.status)) { %><section class="content-card">
+      <div class="section-heading"><div><h2><%= t('Messages') %></h2><p><%= t('Share additional details with the review team.') %></p></div></div>
+      <div class="message-list"><% messages.forEach(message => { %><div class="message-item"><strong><%= message.authorId?.fullName || 'Team member' %></strong><small><%= message.createdAt.toLocaleString() %></small><p><%= message.body %></p></div><% }); %></div>
+      <% if (['Under Review','In Progress','Approved','Assigned','Reopened','Awaiting User Confirmation','More Info Requested'].includes(complaint.status)) { %><form method="post" action="/citizen/complaints/<%= complaint._id %>/messages" class="message-form"><input type="hidden" name="_csrf" value="<%= csrfToken %>"><textarea class="form-control" name="body" rows="3" required minlength="2" maxlength="3000" placeholder="Add a helpful detail or reply to a request"></textarea><button class="btn btn-primary btn-sm"><%- lucide('send') %> <%= t('Add update') %></button></form><% } %>
+    </section><% } %>
+  </div>
+  <aside class="detail-aside">
+    <section class="content-card"><h2 class="h6"><%= t('At a glance') %></h2><div class="meta-list"><div><small><%= t('STATUS') %></small><%- include('../partials/status', { status: complaint.status }) %></div><div><small>DEPARTMENT</small><strong><%= complaint.departmentId?.name || 'Not assigned yet' %></strong></div><div><small><%= t('ASSIGNED TO') %></small><strong><%= complaint.assignedEmployeeId?.fullName || 'Awaiting assignment' %></strong></div></div></section>
+    <% if (complaint.status === 'Awaiting User Confirmation') { %>
+      <section class="content-card"><h2 class="h6"><%= t('Confirm resolution') %></h2><p><%= complaint.pendingResolutionRemarks %></p><p class="text-muted"><%= t('Review the work update. Enter the six-digit code sent to your email to confirm the report is resolved.') %></p><div class="d-flex flex-wrap align-items-end gap-2"><form method="post" action="/citizen/complaints/<%= complaint._id %>/confirm-resolution" class="vstack gap-2"><input type="hidden" name="_csrf" value="<%= csrfToken %>"><label class="form-label"><%= t('Email confirmation code') %><input class="form-control" name="otp" inputmode="numeric" autocomplete="one-time-code" pattern="[0-9]{6}" minlength="6" maxlength="6" required></label><button class="btn btn-primary btn-sm"><%- lucide('check_circle') %> <%= t('Confirm resolution') %></button></form><form method="post" action="/citizen/complaints/<%= complaint._id %>/resolution-code"><input type="hidden" name="_csrf" value="<%= csrfToken %>"><button class="btn btn-outline-secondary btn-sm" type="submit"><%- lucide('refresh_cw') %><%= t('Send a new code') %></button></form></div></section>
+    <% } %>
+    <% if (complaint.status === 'Resolved' && complaint.resolvedAt && Date.now() - complaint.resolvedAt.getTime() <= 604800000) { %>
+      <section class="content-card reopen-card"><h2 class="h6"><%= t('Still needs attention?') %></h2><p><%= t('Ask the team to reopen it within 7 days of resolution.') %></p><form method="post" action="/citizen/complaints/<%= complaint._id %>/reopen"><input type="hidden" name="_csrf" value="<%= csrfToken %>"><textarea class="form-control mb-2" name="remarks" rows="3" required minlength="5" placeholder="Explain what remains unresolved"></textarea><button class="btn btn-outline-dark btn-sm"><%= t('Request reopening') %></button></form></section>
+    <% } %>
+  </aside>
+</div>
+<dialog class="complaint-image-dialog" id="complaint-image-dialog" aria-label="<%= t('Complaint photo') %>"><button type="button" class="complaint-image-close" data-image-lightbox-close aria-label="<%= t('Close') %>" title="<%= t('Close') %>"><%- lucide('close') %></button><img alt="<%= t('Full size complaint photo') %>" data-image-lightbox-full></dialog>
+<script src="/js/image-lightbox.js" defer></script>
+<%- include('../partials/page-bottom') %>

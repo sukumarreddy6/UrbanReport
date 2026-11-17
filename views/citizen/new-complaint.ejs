@@ -1,0 +1,32 @@
+<%- include('../partials/page-top') %>
+<div class="page-heading"><div><p class="eyebrow"><%= isEdit ? t('EDIT REPORT') : t('NEW REPORT') %></p><h1><%= isEdit ? t('Edit report') : t('Tell us what’s happening') %></h1><p class="page-subtitle"><%= t('Give your local team enough detail to find and resolve the issue.') %></p></div><a class="btn btn-light" href="/citizen/complaints"><%- lucide('arrow_back') %> <%= t('My reports') %></a></div>
+<form class="content-card form-card" method="post" action="<%= isEdit ? `/citizen/complaints/${complaint._id}?_method=PUT` : '/citizen/complaints' %>" enctype="multipart/form-data">
+  <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+  <% if (isEdit) { %><input type="hidden" name="_method" value="PUT"><% } %>
+  <section class="form-section"><div class="section-kicker"><span>01</span><div><h2><%= t('Issue details') %></h2><p><%= t('Describe the problem clearly.') %></p></div></div>
+    <div class="row g-3"><div class="col-md-8"><label class="form-label"><%= t('Short title') %><input class="form-control" name="title" value="<%= complaint?.title || '' %>" required minlength="5" maxlength="120" placeholder="<%= t('e.g. Large pothole on Park Street') %>"></label></div>
+      <div class="col-md-4"><label class="form-label"><%= t('Category') %><select class="form-select" name="category" required><option value=""><%= t('Choose category') %></option><% categories.forEach(c => { %><option value="<%= c %>" <%= complaint?.category === c ? 'selected' : '' %>><%= t(c) %></option><% }); %></select></label></div>
+      <div class="col-12"><label class="form-label"><%= t('What happened?') %><textarea class="form-control" name="description" rows="5" required minlength="20" maxlength="5000" placeholder="<%= t('Describe what you noticed, when it started, and why it needs attention.') %>"><%= complaint?.description || '' %></textarea><div class="form-text"><%= t('20–5,000 characters. Avoid including private information.') %></div></label></div>
+    </div>
+  </section>
+  <section class="form-section location-section"><div class="section-kicker"><span>02</span><div><h2><%= t('Where is the issue?') %></h2><p><%= t('Add the clearest address or landmark you can.') %></p></div></div>
+    <div class="location-picker" data-location-picker>
+      <div class="location-search-row"><label class="form-label location-search-label" for="location-address"><%= t('Search for an address or place') %><div class="location-search-control"><%- lucide('search') %><input id="location-address" class="form-control" name="locationAddress" value="<%= complaint?.location?.address || '' %>" required minlength="5" maxlength="300" autocomplete="off" aria-autocomplete="list" aria-controls="location-search-results" placeholder="<%= t('Street, neighborhood, or nearby landmark') %>"><button class="btn btn-primary location-search-button" type="button" data-location-search><%- lucide('search') %><span><%= t('Search') %></span></button><button class="location-clear-button" type="button" data-location-clear aria-label="<%= t('Clear selected location') %>" title="<%= t('Clear selected location') %>" hidden><%- lucide('close') %></button></div></label><button class="btn btn-outline-secondary current-location-button" type="button" data-current-location><%- lucide('locate_fixed') %><span><%= t('Use my current location') %></span></button></div>
+      <p class="location-status" data-location-status role="status" aria-live="polite"><%= t('Search for a place, or enter the address manually.') %></p>
+      <div class="location-results" id="location-search-results" data-location-results role="listbox" hidden></div>
+      <input type="hidden" name="latitude" data-location-latitude value="<%= complaint?.location?.coordinates?.coordinates?.[1] ?? '' %>"><input type="hidden" name="longitude" data-location-longitude value="<%= complaint?.location?.coordinates?.coordinates?.[0] ?? '' %>">
+      <div class="location-map-heading"><strong><%- lucide('map') %><%= t('Pin the exact location') %></strong><span><%= t('Click the map or drag the pin. Zoom in for a more precise location.') %></span></div>
+      <div class="location-map" data-location-map role="application" aria-label="<%= t('Interactive issue location map') %>"></div>
+      <div class="location-map-error" data-map-error role="status" aria-live="polite" hidden><span data-map-error-message></span><button class="btn btn-sm btn-outline-secondary" type="button" data-map-retry><%= t('Retry map') %></button></div>
+      <p class="location-map-help"><%- lucide('info') %><%= t('Your selected pin is saved with this report. Use the plus and minus controls or your mouse wheel to zoom.') %></p>
+    </div>
+  </section>
+  <section class="form-section"><div class="section-kicker"><span>03</span><div><h2><%= t('Add photos') %></h2><p><%= t('Photos help the response team understand the issue.') %></p></div></div>
+    <label class="upload-zone" for="complaint-images"><input id="complaint-images" type="file" name="images" accept="image/jpeg,image/png,image/webp,image/avif" multiple hidden><%- lucide('image-plus') %><strong><%= isEdit ? t('Add more images') : t('Choose up to 5 images') %></strong><small>JPG, PNG, WebP, or AVIF · 5 MB maximum each</small></label><% if (isEdit && complaint.images.length) { %><p class="form-text"><%= t('Existing photos are kept when you save changes.') %></p><div class="image-preview-grid existing-image-preview"><% complaint.images.forEach((image, index) => { %><figure><img src="<%= image.displayUrl %>" alt="<%= t('Existing report photo') %> <%= index + 1 %>"><figcaption><%= t('Existing photo') %> <%= index + 1 %></figcaption></figure><% }); %></div><% } %><div id="image-preview" class="image-preview-grid" aria-live="polite"></div>
+  </section>
+  <div class="form-actions"><a class="btn btn-light" href="/citizen/complaints"><%= t('Cancel') %></a><button class="btn btn-primary"><%- lucide(isEdit ? 'check_circle' : 'send') %> <%= isEdit ? t('Save changes') : t('Submit report') %></button></div>
+</form>
+<script src="/js/complaint-form.js" defer></script>
+<script src="https://cdn.jsdelivr.net/npm/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin="" defer></script>
+<script src="/js/location-picker.js" defer></script>
+<%- include('../partials/page-bottom') %>

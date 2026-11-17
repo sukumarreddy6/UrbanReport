@@ -1,0 +1,5 @@
+<% const displayStatus = ({Submitted:'Under Review',Approved:'In Progress',Assigned:'In Progress',Reopened:'Under Review','Awaiting User Confirmation':'Awaiting resident confirmation'})[status] || status; %><span class="status-pill status-<%= displayStatus.toLowerCase().replace(/[^a-z]+/g, '-') %>"><span class="status-dot"></span><%= t(displayStatus) %></span>
+
+
+
+

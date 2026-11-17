@@ -1,0 +1,12 @@
+<% const flashItems = [...(successMessages || []).map(message => ({ message, type: 'success' })), ...(errorMessages || []).map(message => ({ message, type: 'danger' }))]; %>
+<% if (flashItems.length) { %>
+  <div class="flash-stack" aria-live="polite" aria-relevant="additions removals">
+    <% flashItems.forEach(item => { %>
+      <div class="alert alert-<%= item.type %> flash-message" data-flash-message role="<%= item.type === 'danger' ? 'alert' : 'status' %>">
+        <span><%= item.message %></span>
+        <button type="button" class="flash-dismiss" data-flash-dismiss aria-label="<%= t('Dismiss message') %>" title="<%= t('Dismiss message') %>"><%- lucide('close') %></button>
+      </div>
+    <% }); %>
+  </div>
+  <script src="/js/flash-messages.js" defer></script>
+<% } %>

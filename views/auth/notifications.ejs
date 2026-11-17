@@ -1,0 +1,32 @@
+<%- include('../partials/page-top',{title,activePage:'notifications'}) %>
+<div class="page-heading notifications-heading">
+  <div><p class="eyebrow">YOUR UPDATES</p><h1><%= t("Notifications") %></h1><p class="page-subtitle"><%= t("Important changes to reports you follow.") %></p></div>
+  <% if (notifications.length) { %>
+    <div class="notification-actions">
+      <form method="post" action="/notifications/read-all"><input type="hidden" name="_csrf" value="<%= csrfToken %>"><button class="btn btn-light"><%= t("Mark all as read") %></button></form>
+      <form method="post" action="/notifications/clear"><input type="hidden" name="_csrf" value="<%= csrfToken %>"><button class="btn btn-outline-danger"><%- lucide('trash_2') %><%= t("Clear all") %></button></form>
+    </div>
+  <% } %>
+</div>
+<section class="content-card notifications-card">
+  <% if (notifications.length) { %>
+    <div class="notification-list">
+      <% notifications.forEach(n => { %>
+        <div class="notification-row <%= n.readAt ? '' : 'unread' %>">
+          <a class="notification-link" href="<%= n.href %>">
+            <span class="notification-symbol"><%- lucide('notifications_active') %></span>
+            <span class="notification-copy"><strong class="notification-message <%= n.message.length > 180 ? 'is-collapsed' : '' %>" data-notification-message><%= n.message %></strong><small><%= n.createdAt.toLocaleString() %></small></span>
+            <% if (!n.readAt) { %><span class="unread-dot" aria-label="<%= t('Unread') %>"></span><% } else { %><span class="notification-dot-placeholder"></span><% } %>
+          </a>
+          <div class="notification-tools"><% if (n.message.length > 180) { %><button class="notification-read-more" type="button" data-notification-expand aria-expanded="false"><%= t('Read more') %></button><% } %>
+          <form method="post" action="/notifications/<%= n._id %>/delete" class="notification-dismiss-form"><input type="hidden" name="_csrf" value="<%= csrfToken %>"><button class="notification-dismiss" type="submit" aria-label="<%= t('Clear notification') %>" title="<%= t('Clear notification') %>"><%- lucide('close') %></button></form>
+          </div>
+        </div>
+      <% }); %>
+    </div>
+  <% } else { %>
+    <%- include('../partials/empty',{icon:'notifications_none',title:'All caught up',description:'Updates about your reports will appear here.'}) %>
+  <% } %>
+</section>
+<script src="/js/notification-expand.js" defer></script>
+<%- include('../partials/page-bottom') %>
